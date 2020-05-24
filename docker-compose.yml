@@ -1,0 +1,75 @@
+version: '3.8'
+services:
+  apydox-api:
+    image: 'freshwebio/apydox-api:${APYDOX_VERSION}'
+    container_name: apydox-api
+    restart: always
+    environment:
+      APYDOX_API_CONFIG_FILE: '${APYDOX_API_CONFIG_FILE}'
+    volumes:
+      - '${HOST_APYDOX_API_CONFIG_FILE}:${APYDOX_API_CONFIG_FILE}'
+    networks:
+      - apydox-network
+  apydox-portal:
+    image: 'freshwebio/apydox-portal:${APYDOX_VERSION}'
+    container_name: apydox-portal
+    restart: always
+    ports:
+      - '5640:80'
+    volumes:
+      - '${HOST_PORTAL_CONFIG_FILE}:${PORTAL_CONFIG_FILE}'
+      - '${HOST_PORTAL_CONTENT_FILE}:${PORTAL_CONTENT_FILE}'
+    networks:
+      - apydox-network
+  webserver:
+    image: nginx:mainline-alpine
+    container_name: webserver
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - web-root:/var/www/html
+      - '${NGINX_CONFIG_LOCATION}:/etc/nginx/conf.d'
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - dhparam:/etc/ssl/certs
+    depends_on:
+      - apydox-api
+      - apydox-portal
+    networks:
+      - apydox-network
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - web-root:/var/www/html
+    depends_on:
+      - webserver
+    command: >
+      certonly --webroot --webroot-path=/var/www/html --email ${TLS_CERT_EMAIL} 
+      --agree-tos --no-eff-email --staging 
+      -d ${APYDOX_PORTAL_HOST} -d www.${APYDOX_PORTAL_HOST} 
+      -d ${APYDOX_API_HOST} -d www.${APYDOX_API_HOST}
+
+volumes:
+  certbot-etc:
+  certbot-var:
+  web-root:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${WEB_ASSETS_LOCATION}
+      o: bind
+  dhparam:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${DHPARAM_LOCATION}
+      o: bind
+
+networks:
+  apydox-network:
+    driver: bridge
