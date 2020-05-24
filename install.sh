@@ -2,7 +2,7 @@
 
 # Grab all the resources we need to install the project.
 installer_assets_uri="https://github.com/freshwebio/apydox-bundled-install/archive/master.zip"
-installer_assets_root_dir="$HOME/.apydox-bundled-temp"
+installer_assets_root_dir="$HOME/.apydox-bundled-install"
 if [ ! -d $installer_assets_root_dir ]; then
   mkdir $installer_assets_root_dir
 fi

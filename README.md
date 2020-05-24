@@ -32,5 +32,5 @@ To update your instance of apydox, simply re-run the install steps. If you want 
 ## Limitations
 
 The bundled installer does not work with Docker swarm mode and isn't horizontally scalable,
-if you need something that can scale for larger teams use the more in-depth guides to install the apydox
+if you need something that can scale for larger teams use the more in-depth guides to install apydox
 for cloud-based serverless (e.g. AWS Lambda) and container orchestration (e.g. Amazon ECS) service deployments.
